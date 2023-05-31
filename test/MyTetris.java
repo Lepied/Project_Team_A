@@ -9,6 +9,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Dimension;
@@ -31,10 +33,13 @@ import java.awt.event.*;
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
 
+import java.sql.*;
+
 public class MyTetris extends JFrame {
 
 	private JPanel contentPane;
 	private TetrisCanvas tetrisCanvas;
+    private SearchDB searchDB;
 	/**
 	 * Launch the application.
 	 */
@@ -57,7 +62,7 @@ public class MyTetris extends JFrame {
 	 */
 	
 	public MyTetris() {
-		
+		searchDB = new SearchDB("root", "rkarbfgid819");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 600);
@@ -83,6 +88,25 @@ public class MyTetris extends JFrame {
 			}
 		});
 		mnNewMenu.add(mntmNewMenuItem_1);
+		
+		JMenu mnNewMenu_1 = new JMenu("기록");
+		menuBar.add(mnNewMenu_1);
+		
+		JMenuItem mntmNewMenuItem_2 = new JMenuItem("점수");
+		mntmNewMenuItem_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				try {
+					searchDB.getAll();
+					JOptionPane.showMessageDialog(null,searchDB.getResult(),"점수 순위",1);
+					
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		mnNewMenu_1.add(mntmNewMenuItem_2);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -99,12 +123,12 @@ public class MyTetris extends JFrame {
 		nextBlock.setBounds(290, 20, 120, 120);
 		tetrisCanvas.add(nextBlock);
 		
-		JPanel Temp = new JPanel();
-		Temp.setPreferredSize(new Dimension(100, 100));
-		Temp.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, new Color(255, 255, 255), new Color(160, 160, 160)), "TEMP", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, new Color(0, 0, 0)));
-		Temp.setBackground(SystemColor.menu);
-		Temp.setBounds(290, 150, 120, 120);
-		tetrisCanvas.add(Temp);
+		JPanel Hold = new JPanel();
+		Hold.setPreferredSize(new Dimension(100, 100));
+		Hold.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.RAISED, new Color(255, 255, 255), new Color(160, 160, 160)), "HOLD", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, new Color(0, 0, 0)));
+		Hold.setBackground(SystemColor.menu);
+		Hold.setBounds(290, 150, 120, 120);
+		tetrisCanvas.add(Hold);
 		
 	
 	

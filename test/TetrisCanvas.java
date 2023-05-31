@@ -3,6 +3,8 @@ package test;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.sql.*;
+import java.util.Scanner;
 
 public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 	protected Thread worker;
@@ -15,13 +17,21 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 	protected int interval = 1000;
 	protected int level =1;
 	public int score = 0;
+	public String name="";
+	boolean canHold = true;
 	
 	private Piece currentPiece;
 	private Piece nextPiece;
-
+	private Piece holdPiece;
+	private Piece Temp;
+	private InsertDB db; //InsertDB 선언
+	
+	
+	
 	public TetrisCanvas()
 	{
 		data = new TetrisData();
+		db = new InsertDB("root", "rkarbfgid819");  //선언한 InsertDB 객체 생성
 		addKeyListener(this);
 		colors = new Color[8]; // 테트리스 배경 및 조각 색
 		colors[0] = new Color(80,80,80); //  배경색(회색)
@@ -34,6 +44,16 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 		colors[7] = new Color(40,0,240); //  파란색
 		
 	}
+	public void saveScore(String name, int score) { //점수를 저장하는 함수
+        try {
+            db.addUser(score, name);
+            System.out.println("점수 저장 완료");
+            db.close();
+        } catch (SQLException e) {
+            System.out.println("점수 저장 실패");
+            e.printStackTrace();
+        }
+    }
 	
 	public synchronized int getScore()
 	{
@@ -88,13 +108,23 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 						, w, w, true);
 			}
 		}
-		if(nextPiece !=null)
+		if(nextPiece !=null)  //다음 테트리스 조각 그리기
 		{
 			for(int i =0; i<4; i++)
 			{
 				g.setColor(colors[nextPiece.getType()]);
 				g.fill3DRect(400/2+w*(nextPiece.getX()+nextPiece.c[i]), 150/2+w*(nextPiece.getY()+nextPiece.r[i])
 						, w, w, true);
+			}
+		}
+		if(holdPiece !=null)  //저장된 테트리스 조각 그리기
+		{
+			for(int i =0; i<4; i++)
+			{
+				g.setColor(colors[holdPiece.getType()]);
+				g.fill3DRect(650/2+w*(holdPiece.c[i]), 400/2+w*(holdPiece.r[i])
+						, w, w, true);
+				
 			}
 		}
 		drawScoreAndLevel(g);
@@ -139,9 +169,11 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
                     else
                         nextPiece = new El(data);
             }
+            
           }
         current = nextPiece;
        	nextPiece = null;
+       	
         if (nextPiece == null) {
             // 다음 피스 생성
             int random = (int) (Math.random() * Integer.MAX_VALUE) % 7;
@@ -174,6 +206,7 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
                         nextPiece = new El(data);
             }
           }
+        canHold = true;
       }
     
    
@@ -190,6 +223,7 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 				{
 					generateNextPiece();
 					makeNew = false;
+					
 				}
 				else  // 현재 만들어진 테트리스 조각 아래로 이동
 				{
@@ -199,9 +233,12 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 						if(current.copy())
 						{
 							stop();
-							JOptionPane.showMessageDialog(this, "게임끝\n점수:" + score);
+							name = JOptionPane.showInputDialog(this, "플레이어 이름을 입력해주세요" );
+					        saveScore(name,score);//게임 종료시 점수 저장
+					        JOptionPane.showMessageDialog(this, "게임 끝!\n"+name+"의 점수: " + score);
 						}
 						current = null;
+						
 					}
 					data.removeLines();
 					score = data.getLine()*175 *level;
@@ -231,11 +268,19 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 	public Piece getNextPiece() { //다음블록 가져오기
 		    return nextPiece;
 		}
+	public Piece getHoldPiece() { //다음블록 가져오기
+	    return holdPiece;
+	}
 	
 	public void paintNextPiece(Graphics g) {
 		//다음 피스 그리기 
 	    Piece nextPiece = getNextPiece();
 	    drawPiece(g, nextPiece, 500, 800);
+	}
+	public void paintHoldPiece(Graphics g) {
+		//다음 피스 그리기 
+	    Piece holdPiece = getNextPiece();
+	    drawPiece(g, holdPiece, 500, 1000);
 	}
 	
 	private void drawScoreAndLevel(Graphics g) {
@@ -272,7 +317,9 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 					if(current.copy())
 					{
 						stop();
-						JOptionPane.showMessageDialog(this, "게임끝\n점수 : " + score);
+						name = JOptionPane.showInputDialog(this, "플레이어 이름을 입력해주세요" );
+				        saveScore(name,score);//게임 종료시 점수 저장
+				        JOptionPane.showMessageDialog(this, "게임 끝!\n"+name+"의 점수: " + score);
 					}
 					
 				}
@@ -289,13 +336,38 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 			    makeNew = true;
 			    if (current.copy()) {
 			        stop();
-			        JOptionPane.showMessageDialog(this, "게임 끝\n점수: " + score);
+			        name = JOptionPane.showInputDialog(this, "플레이어 이름을 입력해주세요" );
+			        saveScore(name,score);//게임 종료시 점수 저장
+			        JOptionPane.showMessageDialog(this, "게임 끝!\n"+name+"의 점수: " + score);
 			    }
 			    data.removeLines();
 			    score = data.getLine()*175 *level;
 			    repaint();
 			    break;
+			case 16:
 				
+				//블록 저장
+				//현재 무한으로 홀드피스와 현재피스를 바꿀 수 있는 상황인데 
+				//해당 상황은 옳지 않으므로 한번 홀드를 했으면 다음 블럭이 생성되기 전까지 홀드를 할 수없게 만들어야 함.
+			if(canHold ==true)
+			{
+				if(holdPiece ==null)
+				{
+					holdPiece = current;
+					current= null;
+					makeNew =true;
+					repaint();
+				}
+				else
+				{
+					Temp = current;
+					current = holdPiece;
+					holdPiece = Temp;
+					repaint();
+				}
+				canHold = false;
+			
+			}
 
 		}
 	}
