@@ -4,8 +4,10 @@ public class TetrisData {
 	public static final int ROW = 20;
 	public static final int COL = 10;
 	
-	private int data[][]; // ROW x COL 의배열
+	public int data[][]; // ROW x COL 의배열
 	private int line;  //지운 줄 수
+	
+	private TetrisCanvas tetrisCanvas;
 
 	public TetrisData()
 	{
@@ -29,7 +31,7 @@ public class TetrisData {
 	
 	public synchronized void removeLines()
 	{
-		int linesCleard =0;
+
 		NEXT:
 		for(int i = ROW-1; i>=0; i--)
 		{

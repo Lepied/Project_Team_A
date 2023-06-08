@@ -18,7 +18,6 @@ public class SearchDB {
    // 테이블 모든 데이터 읽어오기
    public void getAll() throws SQLException {
 	  int count =0;
-       // String sql = "select * from user";
 	  String sql = "select * from user ORDER BY score DESC ";
       PreparedStatement st = con.prepareStatement(sql);
       ResultSet rs = st.executeQuery();
@@ -28,8 +27,9 @@ public class SearchDB {
          System.out.printf("플레이어 : %s 점수 : %d\n", uname, score);
          try
          {
-         result[count] = Integer.toString(count+1) + "등 \t"+"플레이어 : "+uname+"  점수 : "+Integer.toString(score)+"\n";
+        	 result[count] = Integer.toString(count+1) + "등 \t"+"플레이어 : "+uname+"  점수 : "+Integer.toString(score)+"\n";
          }
+        
          catch(Exception e)
          {
         	e.printStackTrace();

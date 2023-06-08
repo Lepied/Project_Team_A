@@ -14,24 +14,11 @@ import javax.swing.JOptionPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Dimension;
-import java.awt.Point;
-import javax.swing.border.LineBorder;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Rectangle;
-import java.awt.GridLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.EtchedBorder;
 import java.awt.SystemColor;
-import javax.swing.JTextPane;
-import java.awt.FlowLayout;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.JTextField;
-import javax.swing.JTextArea;
 
 import java.sql.*;
 
@@ -40,6 +27,9 @@ public class MyTetris extends JFrame {
 	private JPanel contentPane;
 	private TetrisCanvas tetrisCanvas;
     private SearchDB searchDB;
+
+    private JMenuItem mntmNewMenuItem;
+    private JPanel clientCanvasPanel;
 	/**
 	 * Launch the application.
 	 */
@@ -62,10 +52,16 @@ public class MyTetris extends JFrame {
 	 */
 	
 	public MyTetris() {
+		setTitle("Tetris");
 		searchDB = new SearchDB("root", "rkarbfgid819");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 600);
+		setBounds(100, 100, 470, 600);
+		
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(new BorderLayout(0, 0));
 		
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -73,10 +69,17 @@ public class MyTetris extends JFrame {
 		JMenu mnNewMenu = new JMenu("\uAC8C\uC784");
 		menuBar.add(mnNewMenu);
 		
-		JMenuItem mntmNewMenuItem = new JMenuItem("\uC2DC\uC791");
+		SoundPlayer soundPlayer = new SoundPlayer();
+		soundPlayer.playBackgroundMusic("01-Tetris-Title.wav");
+		
+		mntmNewMenuItem = new JMenuItem("\uC2DC\uC791");
 		mntmNewMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
+				mntmNewMenuItem.setEnabled(false);
 				tetrisCanvas.start();
+				soundPlayer.stopBackgroundMusic();
+				soundPlayer.playBackgroundMusic("TetrisBGM.wav");
 			}
 		});
 		mnNewMenu.add(mntmNewMenuItem);
@@ -107,10 +110,13 @@ public class MyTetris extends JFrame {
 			}
 		});
 		mnNewMenu_1.add(mntmNewMenuItem_2);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-		contentPane.setLayout(new BorderLayout(0, 0));
+		
+		
+		clientCanvasPanel = new JPanel();
+		contentPane.add(clientCanvasPanel,BorderLayout.EAST);
+		
+
+
 		
 		tetrisCanvas = new TetrisCanvas();
 		contentPane.add(tetrisCanvas, BorderLayout.CENTER);
@@ -130,8 +136,6 @@ public class MyTetris extends JFrame {
 		Hold.setBounds(290, 150, 120, 120);
 		tetrisCanvas.add(Hold);
 		
-	
-	
 	}
 
 
@@ -144,5 +148,7 @@ public class MyTetris extends JFrame {
 	public JPanel getTemp() {
 		return getTemp();
 	}
-
+	public JMenuItem getMntmNewMenuItem() {
+		return mntmNewMenuItem;
+	}
 }

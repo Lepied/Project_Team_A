@@ -158,6 +158,14 @@ public abstract class Piece {
 			if(isOverlap(RIGHT) != true) {center.x++;}
 			else return;
 	}
+	public void resetPosition()
+	{
+		if(center.y + getMaxY()+1 < TetrisData.ROW)
+		{
+			center.y = data.data[0][4];
+			center.x = 4;
+		}
+	}
 	public void rotate()//조각회전
 	{
 		int rc = roteType();

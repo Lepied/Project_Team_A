@@ -16,20 +16,25 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 	protected Piece current;
 	protected int interval = 1000;
 	protected int level =1;
+	private int linesCleard =0;
 	public int score = 0;
 	public String name="";
 	boolean canHold = true;
+	int temp = 10;
+	//boolean isRunning = false;
 	
 	private Piece currentPiece;
 	private Piece nextPiece;
 	private Piece holdPiece;
 	private Piece Temp;
 	private InsertDB db; //InsertDB 선언
+	private MyTetris mytetris;
 	
 	
 	
 	public TetrisCanvas()
 	{
+		level = 1;
 		data = new TetrisData();
 		db = new InsertDB("root", "rkarbfgid819");  //선언한 InsertDB 객체 생성
 		addKeyListener(this);
@@ -59,6 +64,21 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 	{
 		return score;
 	}
+	
+	public synchronized void addLinesCleared() //레벨 컨트롤
+	{
+		linesCleard = data.getLine();
+		
+		if(linesCleard>=temp)
+		{
+		   level++;
+		   interval = 1000/level;
+		   temp = level*10;
+		}
+		linesCleard -= temp;
+		
+	}
+	
 
 	public void start()
 	{
@@ -67,6 +87,7 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 		worker.start();
 		makeNew = true;
 		stop = false;
+		//isRunning = true;
 		requestFocus();
 		repaint();
 		
@@ -219,6 +240,7 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 			score = data.getLine()*175 *level;
 			try
 			{
+		
 				if(makeNew) //새로운 조각 만들기 
 				{
 					generateNextPiece();
@@ -227,25 +249,31 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 				}
 				else  // 현재 만들어진 테트리스 조각 아래로 이동
 				{
-					if(current.moveDown())
+					if(current != null)
 					{
-						makeNew =true;
-						if(current.copy())
+						if(current.moveDown())
 						{
-							stop();
-							name = JOptionPane.showInputDialog(this, "플레이어 이름을 입력해주세요" );
-					        saveScore(name,score);//게임 종료시 점수 저장
-					        JOptionPane.showMessageDialog(this, "게임 끝!\n"+name+"의 점수: " + score);
+							makeNew =true;
+							if(current.copy())
+							{
+								stop();
+								name = JOptionPane.showInputDialog(this, "플레이어 이름을 입력해주세요" );
+						        saveScore(name,score);//게임 종료시 점수 저장
+						        JOptionPane.showMessageDialog(this, "게임 끝!\n"+name+"의 점수: " + score);
+						        
+							}
+							current = null;
+							
 						}
-						current = null;
-						
 					}
+					
 					data.removeLines();
 					score = data.getLine()*175 *level;
 					
 				}
 				repaint();
-				Thread.currentThread().sleep(interval/level);
+				addLinesCleared();
+				Thread.currentThread().sleep(interval);
 			}
 			catch(Exception e) 
 			{
@@ -362,6 +390,7 @@ public class TetrisCanvas extends JPanel implements Runnable,KeyListener{
 				{
 					Temp = current;
 					current = holdPiece;
+					current.resetPosition();
 					holdPiece = Temp;
 					repaint();
 				}
